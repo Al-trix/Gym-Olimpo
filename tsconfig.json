@@ -1,0 +1,46 @@
+{
+  "compilerOptions": {
+    /* Configuración del lenguaje */
+    "target": "ES2022",                    // Versión de JavaScript de salida
+    "module": "esnext",                  // Sistema de módulos (commonjs para Node.js)
+    "lib": ["ES2022"],                     // Bibliotecas incluidas
+    "moduleResolution": "node",            // Estrategia de resolución de módulos
+    
+    /* Opciones de salida */
+    "outDir": "./dist",                    // Carpeta de salida para archivos compilados
+    "rootDir": "./src",                    // Carpeta raíz del código fuente
+    "removeComments": true,                // Remover comentarios en build
+    "sourceMap": true,                     // Generar source maps para debugging
+    
+    /* Verificaciones estrictas */
+    "strict": true,                        // Habilitar todas las verificaciones estrictas
+    "noImplicitAny": true,                 // Error en expresiones tipo 'any' implícito
+    "strictNullChecks": true,              // Verificar null y undefined
+    "strictFunctionTypes": true,           // Verificar tipos de funciones
+    "strictPropertyInitialization": true,  // Verificar inicialización de propiedades
+    "noUnusedLocals": true,                // Error en variables locales no usadas
+    "noUnusedParameters": true,            // Error en parámetros no usados
+    "noImplicitReturns": false,             // Error si no todas las rutas retornan valor
+    "noFallthroughCasesInSwitch": true,    // Error en switch sin break
+    
+    /* Módulos y resolución */
+    "esModuleInterop": true,               // Interoperabilidad con módulos ES
+    "allowSyntheticDefaultImports": true,  // Permitir imports default sintéticos
+    "resolveJsonModule": true,             // Permitir importar archivos JSON
+    "skipLibCheck": true,                  // Saltar verificación de archivos .d.ts
+    "forceConsistentCasingInFileNames": true, // Forzar consistencia en nombres de archivos
+    
+    /* Paths aliases (opcional) */
+    "baseUrl": "./",
+    "paths": {
+      "@/*": ["src/*"],
+      "@controllers/*": ["src/controllers/*"],
+      "@models/*": ["src/models/*"],
+      "@services/*": ["src/services/*"],
+      "@utils/*": ["src/utils/*"],
+      "@types/*": ["src/types/*"]
+    }
+  },
+  "include": ["src/**/*"],                 // Archivos a incluir
+  "exclude": ["node_modules", "dist", "gitignore", "env"]      // Archivos a excluir
+}

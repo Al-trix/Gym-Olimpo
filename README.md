@@ -12,10 +12,10 @@ administrativos del gimnasio **Gym Olimpo**, reemplazando tareas
 manuales por flujos digitales eficientes.\
 El sistema permite gestionar:
 
--   Suscripciones de usuarios\
--   Inventario del gimnasio\
--   Horarios del personal\
--   Rutinas de entrenamiento\
+-   Suscripciones de usuarios
+-   Inventario del gimnasio
+-   Horarios del personal
+-   Rutinas de entrenamiento
 -   Cuentas y roles del personal (Administrador, Jefe de entrenadores,
     Entrenadores, Recepcionista y Usuarios)
 
@@ -34,10 +34,10 @@ a una base de datos moderna y segura.
 
 ### Objetivos Específicos
 
--   Facilitar la administración de suscripciones y clientes.\
--   Organizar los horarios de trabajo y rutinas.\
--   Controlar el inventario del establecimiento.\
--   Establecer un sistema seguro de autenticación basado en roles.\
+-   Facilitar la administración de suscripciones y clientes.
+-   Organizar los horarios de trabajo y rutinas.
+-   Controlar el inventario del establecimiento.
+-   Establecer un sistema seguro de autenticación basado en roles.
 -   Proveer una interfaz rápida, intuitiva y moderna.
 
 ------------------------------------------------------------------------
@@ -48,28 +48,28 @@ El proyecto utiliza una arquitectura cliente-servidor, donde:
 
 ### Backend (API REST)
 
--   Node.js + TypeScript\
--   Express.js\
--   Prisma ORM\
+-   Node.js + TypeScript
+-   Express.js
+-   Prisma ORM
 -   Base de datos: PostgreSQL
 
-Funciones principales:\
-- Gestión de usuarios y roles\
-- CRUDs de suscripciones, inventario, horarios y rutinas\
-- Validaciones y autenticación\
-- Registro de acciones\
+Funciones principales:
+- Gestión de usuarios y roles
+- CRUDs de suscripciones, inventario, horarios y rutinas
+- Validaciones y autenticación
+- Registro de acciones
 - Seguridad y control de acceso
 
 ### Frontend
 
--   React\
--   TailwindCSS\
+-   React
+-   TailwindCSS
 -   Axios para consumo de API
 
-Funciones principales:\
-- Interfaces separadas por roles\
-- Formularios dinámicos\
-- Vistas administrativas\
+Funciones principales:
+- Interfaces separadas por roles
+- Formularios dinámicos
+- Vistas administrativas
 - Visualización de horarios, inventario y rutinas
 
 ------------------------------------------------------------------------
@@ -79,40 +79,40 @@ Funciones principales:\
 ### Módulo de Cuentas y Roles
 
 -   Crear cuentas de administrador, recepcionista, entrenadores y jefe
-    de entrenadores.\
--   Validaciones avanzadas.\
+    de entrenadores.
+-   Validaciones avanzadas.
 -   Control de permisos según el rol.
 
 ### Módulo de Suscripciones
 
--   Registro de membresías (diaria, quincenal, mensual).\
--   Generación automática de fechas.\
+-   Registro de membresías (diaria, quincenal, mensual).
+-   Generación automática de fechas.
 -   Asociación con cuenta de usuario.
 
 ### Módulo de Inventario
 
--   CRUD completo del inventario del gimnasio.\
--   Alertas de stock bajo.\
+-   CRUD completo del inventario del gimnasio.
+-   Alertas de stock bajo.
 -   Evita duplicados.
 
 ### Módulo de Horarios
 
--   Asignación de horarios a entrenadores.\
--   Prevención de choques de horarios.\
+-   Asignación de horarios a entrenadores.
+-   Prevención de choques de horarios.
 -   Visualización por rol.
 
 ### Módulo de Rutinas
 
--   Creación de rutinas generales o personalizadas (de pago).\
--   Organización por nivel, objetivo y duración.\
+-   Creación de rutinas generales o personalizadas (de pago).
+-   Organización por nivel, objetivo y duración.
 -   Control de acceso según usuario.
 
 ------------------------------------------------------------------------
 
 ## Lineamientos Visuales
 
--   Gama de colores: Azul, negro y dorado.\
--   Estilo: Moderno, simple y accesible.\
+-   Gama de colores: Azul, negro y dorado.
+-   Estilo: Moderno, simple y accesible.
 -   Responsive: Adaptado a móviles, tablets y PC.
 
 ------------------------------------------------------------------------

@@ -1,0 +1,232 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Roles {
+  id        String      @id @default(uuid()) @db.Uuid
+  name      UserType
+
+  //* Relation of Roles to User (One to Many)
+  users     User[]
+}
+
+model User {
+  id           String       @id @default(uuid()) @db.Uuid
+  fullName     String?      @db.VarChar(255)
+  email        String?      @unique
+  password     String       @db.VarChar(255)
+  role         Roles        @relation(fields: [roleId], references: [id])
+  roleId       String       @db.Uuid
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  active       Boolean      @default(true)
+  logs         UserLogs[]
+
+  //* Relation of User to subscriptions (One to Many)
+  subscriptionUser        Subscriptions[]    @relation(name: "userSubscriptions")
+
+  //* Relation of User to subscriptions created by them (One to Many)
+  createdSubscriptions    Subscriptions[]    @relation(name: "createdBySubscriptions")
+
+  //* Relation of User to inventory created by them (One to Many)
+  createdInventory        Inventory[]        @relation(name: "createdByItems")
+
+  //* Relation of User to inventory updated by them (One to Many)
+  updatedInventory        Inventory[]        @relation(name: "updatedByItems")
+
+  //* Relation of User to schedules created by them (One to Many)
+  createdSchedules        Schedules[]        @relation(name: "createdSchedules")
+
+  //* Relation of User to schedules updated by them (One to Many)
+  updatedSchedules        Schedules[]        @relation(name: "updatedSchedules")
+
+  //* Relation of User to schedules as coach (One to Many)
+  coachSchedules          Schedules[]        @relation(name: "coachSchedules")
+
+  //* Relation of User to routines as coach (One to Many)
+  coachRoutines           routines[]         @relation(name: "coachRoutines")
+}
+
+model UserLogs {
+  id           String       @id @default(uuid()) @db.Uuid
+  userId       String       @db.Uuid
+  action       String       @db.VarChar(255)
+  timestamp    DateTime     @default(now())
+
+  //* Relation of UserLogs to User (Many to One)
+  user     User      @relation(fields: [userId], references: [id])
+
+  //! Index for search optimization
+  @@index([userId,action,timestamp])
+}
+
+model Subscriptions {
+  id             String             @id @default(uuid()) @db.Uuid
+  type           SubscriptionType   @default(DAY)
+  startDate      DateTime           @default(now())
+  endDate        DateTime
+  active         Boolean            @default(true)
+  userId         String             @db.Uuid
+  createdById    String             @db.Uuid
+  updatedAt      DateTime           @updatedAt
+
+  //* Relation of subscriptions to User (Many to One)
+  createdBy   User      @relation(name: "createdBySubscriptions", fields: [createdById], references: [id])
+ 
+  //* Relation of subscriptions to User (Many to One)
+  user        User      @relation(name: "userSubscriptions", fields: [userId], references: [id])
+
+  //! Index for search optimization
+  @@index([userId, active, endDate, startDate])
+}
+
+model Inventory {
+  id               String           @id @default(uuid()) @db.Uuid
+  name             String           @db.VarChar(255) @unique
+  type             InventoryType
+  quantity         Int              @default(1)
+  status           Status           @default(ACTIVE)
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  lowStockAlert    Int              @default(2)
+  updatedById      String           @db.Uuid
+  createdById      String           @db.Uuid
+
+  //* Relation of inventory to User (Many to One)
+  creator    User      @relation(name: "createdByItems", fields: [createdById], references: [id])
+
+  //* Relation of inventory to User (Many to One)
+  updater    User      @relation(name: "updatedByItems", fields: [updatedById], references: [id])
+
+  //! Index for search optimization
+  @@index([name, type, status, quantity, lowStockAlert])
+}
+
+
+model Schedules {
+  id            String        @id @default(uuid()) @db.Uuid
+  day           Days
+  startTime     DateTime
+  endTime       DateTime
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  active        Boolean       @default(true)
+  createdById   String        @db.Uuid
+  updatedById   String        @db.Uuid
+  coachId       String        @db.Uuid
+
+  //* Relation of schedules to User (Many to One)
+  creator       User          @relation(name: "createdSchedules", fields: [createdById], references: [id])
+
+  //* Relation of schedules to User (Many to One)
+  updater       User          @relation(name: "updatedSchedules", fields: [updatedById], references: [id])
+
+  //* Relation of schedules to User (Many to One)
+  coach         User          @relation(name: "coachSchedules", fields: [coachId], references: [id])
+}
+
+model routines {
+  id            String          @id @default(uuid()) @db.Uuid
+  name          String          @db.VarChar(255) @unique
+  type          RoutineType     @default(GENERAL)
+  level         Level           @default(BEGINNER)
+  duration      Int
+  objectives    String          @db.VarChar(500)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  coachId       String          @db.Uuid
+  exercises     routineExercises[]
+
+  //* Relation of routines to User (Many to One)
+  coach         User           @relation(name: "coachRoutines", fields: [coachId], references: [id])
+}
+
+model routineExercises {
+  id            String         @id @default(uuid()) @db.Uuid
+  exerciseName  String         @db.VarChar(255)
+  description   String         @db.VarChar(500)
+  sets          Int
+  reps          Int
+  routineId     String         @db.Uuid
+
+  //* Relation of routineExercises to routines (Many to One)
+  routine       routines       @relation(fields: [routineId], references: [id])
+}
+
+
+//? Enums for various fields 
+//* Status Enum
+enum Status {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+//* UserType Enum
+enum UserType {
+  ADMIN
+  USER
+  RECEPTIONIST
+  COACH
+  LEADER_COACHS
+}
+
+//* SubscriptionType Enum
+enum SubscriptionType {
+  DAY
+  FORTNIGHT
+  MONTH 
+  YEAR
+}
+
+//* InventoryType Enum
+enum InventoryType {
+  EQUIPMENT
+  SUPPLIES
+  MERCHANDISE
+  MACHINE
+  FREE_WEIGHT
+  CARDIO
+  ACCESSORY
+  DUMBBELL
+  BARBELL
+  MAT
+  BENCHES
+  BIKES
+  WEIGHTS_PLATES
+}
+
+//* Days Enum
+enum Days {
+  MONDAY
+  TUESDAY
+  WEDNESDAY
+  THURSDAY
+  FRIDAY
+  SATURDAY
+  SUNDAY
+}
+
+//* Type of Routine Enum
+enum RoutineType {
+  GENERAL
+  PAY
+}
+
+//* Level of Routine Enum
+enum Level {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}

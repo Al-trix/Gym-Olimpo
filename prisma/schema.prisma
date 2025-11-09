@@ -15,7 +15,7 @@ datasource db {
 
 model Roles {
   id        String      @id @default(uuid()) @db.Uuid
-  name      UserType
+  name      UserType    @unique
 
   //* Relation of Roles to User (One to Many)
   users     User[]
@@ -25,6 +25,7 @@ model User {
   id           String       @id @default(uuid()) @db.Uuid
   fullName     String?      @db.VarChar(255)
   email        String?      @unique
+  document     String       @unique @db.VarChar(50)
   password     String       @db.VarChar(255)
   role         Roles        @relation(fields: [roleId], references: [id])
   roleId       String       @db.Uuid
@@ -56,6 +57,8 @@ model User {
 
   //* Relation of User to routines as coach (One to Many)
   coachRoutines           routines[]         @relation(name: "coachRoutines")
+
+  @@index([document,email,fullName,active])
 }
 
 model UserLogs {

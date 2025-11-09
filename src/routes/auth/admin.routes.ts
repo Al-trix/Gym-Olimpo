@@ -6,6 +6,7 @@ import {
   adminDelete,
   adminLogout,
 } from '../../controllers/auth/admin.controllers';
+import  verifyToken  from '../../middlewares/verifyToken';
 
 //* Routers
 const routerAdmin = Router();
@@ -18,10 +19,10 @@ routerAdmin.get(`${pathRoot}/login`, adminLogin);
 routerAdmin.post(`${pathRoot}/register`, adminRegister);
 
 //? route and controller for admin update
-routerAdmin.put(`${pathRoot}/profile`, adminUpdate);
+routerAdmin.put(`${pathRoot}/profile`, verifyToken, adminUpdate);
 
 //? route and controller for admin delete
-routerAdmin.delete(`${pathRoot}/delete`, adminDelete);
+routerAdmin.delete(`${pathRoot}/delete`, verifyToken, adminDelete);
 
 //? route and controller for admin logout
 routerAdmin.get(`${pathRoot}/logout`, adminLogout);

@@ -41,6 +41,12 @@
       "@types/*": ["src/types/*"]
     }
   },
+
+  /* Configuración de la compilación para tipos  en express */
+  "typeRoots": ["./src/types", "./node_modules/@types"],
+  "types": ["node", "express", "cookie-parser", "jsonwebtoken"],
+
+
   "include": ["src/**/*"],                 // Archivos a incluir
   "exclude": ["node_modules", "dist", "gitignore", "env"]      // Archivos a excluir
 }

@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import type { UserType } from "./libs";
 export type AdminController = {
   adminLogin: (req: Request, res: Response) => void;
   adminRegister: (req: Request, res: Response) => void;
@@ -7,11 +8,16 @@ export type AdminController = {
   adminLogout: (req: Request, res: Response) => void;
 };
 
-export type adminBodys = {
+export type AdminBody = {
   fullName: string;
   email: string;
   password: string;
-  role: string;
+  role: UserType;
   document: string;
+}
+
+export type AdminLoginBody = {
+  email: string;
+  password: string;
 }
 

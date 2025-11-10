@@ -9,7 +9,7 @@ const createToken: CreateToken = (payload, role, nameCookie, res) => {
     
     const body: BodyToken = {
       data: payloadToken,
-      role: role,
+      role,
     }
     
     res.cookie(nameCookie, body, {

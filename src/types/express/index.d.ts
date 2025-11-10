@@ -1,7 +1,14 @@
 import 'express';
 import jwt from 'jsonwebtoken';
 import { BodyToken } from '../libs';
+import { UserType } from '@prisma/client';
 
+interface AuthBody {
+  data: {
+    id: string;
+  };
+  role: UserType;
+}
 declare global {
   namespace Express {
     interface Request {
@@ -9,7 +16,7 @@ declare global {
         token__user?: BodyToken;
         [key: string]: any;
       };
-      user?: string | jwt.JwtPayload;
+      user?:  AuthBody;
     }
   }
 }

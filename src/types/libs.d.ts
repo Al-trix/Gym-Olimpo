@@ -10,8 +10,10 @@ export type CreateToken = (
   res: Response
 ) => void;
 
-type BodyToken = {
-  data: string;
+interface BodyToken {
+  data: {
+    id: string;
+  };
   role: UserType;
 }
 

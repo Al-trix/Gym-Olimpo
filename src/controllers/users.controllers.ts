@@ -1,6 +1,7 @@
 import prisma from '../libs/prisma';
-import { hash, compare } from 'bcryptjs';
 import createToken from '../libs/createToken';
+import { hash, compare } from 'bcryptjs';
+import { comprobateRole } from '@/libs/comprobateRole';
 import { AuthController } from '../types/controllers';
 import { UserType } from '@prisma/client';
 
@@ -8,13 +9,17 @@ export const authLogin: AuthController['authLogin'] = async (req, res) => {
   try {
     const { email, password, document, role } = req.body;
 
-    let user;
+    comprobateRole(role, email, document, res);
 
-    if (
-      role !== UserType.ADMIN ||
-      role !== UserType.RECEPTIONIST ||
-      role !== UserType.LEADER_COACHS
-    ) {
+    const ALLOW_ROLE: UserType[] = [
+      UserType.ADMIN,
+      UserType.RECEPTIONIST,
+      UserType.LEADER_COACHS,
+    ];
+
+    let user;
+    
+    if (!ALLOW_ROLE.includes(role)) {
       user = await prisma.user.findUnique({
         where: {
           document,
@@ -62,16 +67,8 @@ export const authLogin: AuthController['authLogin'] = async (req, res) => {
         },
       });
     }
-    if (user.role?.name !== UserType.ADMIN) {
-      return res.status(400).json({
-        error: {
-          message: 'User is not an admin',
-          typeError: 'NOT_ADMIN',
-        },
-      });
-    }
 
-    createToken({ id: user.id}, user.role?.name, 'token__user', res);
+    createToken({ id: user.id }, user.role?.name, 'token__user', res);
 
     res.status(200).json({
       body: {
@@ -95,9 +92,17 @@ export const authRegister: AuthController['authRegister'] = async (
 ) => {
   try {
     const { fullName, email, password, role, document } = req.body;
-    const { creatorRole } = req.query;
+    const { creator } = req.query;
 
-    if (creatorRole !== UserType.ADMIN && creatorRole !== UserType.LEADER_COACHS) {
+    if (!creator) {
+      return res.status(400).json({
+        error: {
+          message: 'Creator role not found',
+          typeError: 'NOT_FOUND',
+        },
+      });
+    }
+    if (creator !== UserType.ADMIN && creator !== UserType.LEADER_COACHS) {
       return res.status(400).json({
         error: {
           message: 'User is not an admin or leader coach',
@@ -110,9 +115,9 @@ export const authRegister: AuthController['authRegister'] = async (
       return res.status(400).json({
         error: {
           message: 'Account user not allowed',
-          typeError: 'NOT_CREATED_USER'
+          typeError: 'NOT_CREATED_USER',
         },
-      })  
+      });
     }
 
     const hashedPassword = await hash(password, 10);
@@ -348,6 +353,57 @@ export const authLogout: AuthController['authLogout'] = async (req, res) => {
   try {
     res.clearCookie('token__user');
     return res.status(200).json({ message: 'Logout successfully' });
+  } catch (err) {
+    console.log(err);
+    return res.status(500).json({
+      error: {
+        message: 'Internal server error',
+        typeError: 'INTERNAL_SERVER_ERROR',
+      },
+    });
+  }
+};
+
+export const authValidteCookie: AuthController['authValidteCookie'] = async (
+  req,
+  res
+) => {
+  try {
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ message: 'Not authorized', typeError: 'UNAUTHORIZED' });
+    }
+    const { data, role } = req.user;
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: data.id,
+      },
+      include: {
+        role: true,
+      },
+    });
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ message: 'Not found user', typeError: 'NOT_FOUND' });
+    }
+
+    return res.status(200).json({
+      data: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        document: user.document,
+        role: user.role?.name,
+        active: user.active,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+      },
+      message: 'User validated successfully',
+    });
   } catch (err) {
     console.log(err);
     return res.status(500).json({

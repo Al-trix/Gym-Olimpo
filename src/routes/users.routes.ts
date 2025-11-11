@@ -5,12 +5,13 @@ import {
   authUpdate,
   authDelete,
   authLogout,
+  authValidteCookie
 } from '../controllers/users.controllers';
 import verifyToken from '../middlewares/verifyToken';
 
 //* Routers
 const routerAuth = Router();
-const pathRoot = '/api/auth/';
+const pathRoot = '/api/auth';
 
 //? route and controller for users login
 routerAuth.get(`${pathRoot}/login`, authLogin);
@@ -26,5 +27,8 @@ routerAuth.delete(`${pathRoot}/delete/:id`, verifyToken, authDelete);
 
 //? route and controller for users logout
 routerAuth.get(`${pathRoot}/logout/:id`, verifyToken, authLogout);
+
+//? route and controller for the get to cookie
+routerAuth.get(`${pathRoot}/cookie`, verifyToken, authValidteCookie);
 
 export default routerAuth;

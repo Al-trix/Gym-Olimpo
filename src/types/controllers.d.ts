@@ -1,5 +1,5 @@
 import { RequestHandler } from 'express';
-import type { UserType } from './libs';
+import type { UserType, SubscriptionType } from '@prisma/client';
 
 export type AuthBody = {
   fullName?: string;
@@ -9,27 +9,58 @@ export type AuthBody = {
   document: string;
 };
 
-type AuthId = {
+export type SubscriptionBody = {
+  type: SubscriptionType;
+  document: string;
+  fullName?: string;
+  active: boolean;
+};
+
+type Params = {
   id: string;
 };
 
 type Creator = {
-  creatorRole: UserType;
+  creator: UserType;
 };
 
 export type AuthController = {
   authLogin: RequestHandler<
     {},
-    any,
+    unknown,
     Pick<AuthBody, 'email' | 'password' | 'document' | 'role'>,
     Creator
   >;
 
-  authRegister: RequestHandler<{}, any, AuthBody, Creator>;
+  authRegister: RequestHandler<{}, unknown, AuthBody, Creator>;
 
-  authUpdate: RequestHandler<AuthId, any, Partial<AuthBody>>;
+  authUpdate: RequestHandler<Params, unknown, Partial<AuthBody>>;
 
-  authDelete: RequestHandler<AuthId>;
+  authDelete: RequestHandler<Params>;
 
-  authLogout: RequestHandler<AuthId>;
+  authLogout: RequestHandler<Params>;
+
+  authValidteCookie: RequestHandler;
+};
+
+type filtersQuery = {
+  type?: SubscriptionType;
+  active?: boolean;
+  document?: string;
+  fullName?: string;
+  creator?: UserType;
+  page?: number;
+  limit?: number;
+}
+
+export type SubscriptionController = {
+  viewSubscriptions: RequestHandler<unknown, unknown, filtersQuery>;
+  viewOneSubscription: RequestHandler<Params, unknown>;
+  createSubscription: RequestHandler<{ idCreatedBy: string }, unknown, SubscriptionBody>;
+  updateSubscription: RequestHandler<
+    Params,
+    unknown,
+    Partial<SubscriptionBody>
+  >;
+  deleteSubscription: RequestHandler<Params, unknown>;
 };

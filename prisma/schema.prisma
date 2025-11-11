@@ -71,7 +71,7 @@ model UserLogs {
   user     User      @relation(fields: [userId], references: [id])
 
   //! Index for search optimization
-  @@index([userId,action,timestamp])
+  @@index([action,timestamp, userId])
 }
 
 model Subscriptions {
@@ -91,7 +91,7 @@ model Subscriptions {
   user        User      @relation(name: "userSubscriptions", fields: [userId], references: [id])
 
   //! Index for search optimization
-  @@index([userId, active, endDate, startDate])
+  @@index([type, startDate, endDate, active])
 }
 
 model Inventory {

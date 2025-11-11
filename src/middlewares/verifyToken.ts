@@ -23,9 +23,12 @@ const verifyToken: RequestHandler = (req, res, next) => {
     const decoded = jwt.verify(
       token__user.data,
       process.env.TOKEN_SECRET!
-    ) as BodyToken;
+    ) as { id: string };
 
-    req.user = decoded;
+    req.user = {
+      data: decoded,
+      role: token__user.role,
+    };
 
     next();
   } catch (err) {

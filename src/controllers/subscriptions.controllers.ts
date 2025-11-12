@@ -1,11 +1,107 @@
 import prisma from '../libs/prisma';
-import type { SubscriptionController } from '../types/controllers.d';
-import { UserType } from '@prisma/client';
-import endDate from '@/libs/endDate';
+import comprobateActive from '@/libs/comprobateActive';
+import {
+  SubscriptionController,
+  SubscriptionSelect,
+} from '../types/controllers.d';
+import { UserType, SubscriptionType } from '@prisma/client';
+import endDate from '@/libs/timeSubscription';
 import { hash } from 'bcryptjs';
+
+import timeSubscription from '@/libs/timeSubscription';
 
 export const viewSubscriptions: SubscriptionController['viewSubscriptions'] =
   async (req, res) => {
+    const { limit, page, type, document, fullName, creator, active } =
+      req.query;
+
+    const where: any = {};
+
+    if (type) {
+      where['type'] = type ? (String(type) as SubscriptionType) : undefined;
+    }
+
+    if (active) {
+      where['active'] = active ? Boolean(active) : undefined;
+    }
+
+    if (document || fullName || creator)
+      where['user'] = {
+        document: {
+          contains: document ? String(document) : undefined,
+          mode: 'insensitive',
+        },
+        fullName: {
+          contains: fullName ? String(fullName) : undefined,
+          mode: 'insensitive',
+        },
+      };
+    where['createdBy'] = {
+      fullName: {
+        contains: creator ? String(creator) : undefined,
+        mode: 'insensitive',
+      },
+    };
+
+    comprobateActive(limit, page, res);
+
+    if (!where) {
+      return res.status(400).json({
+        error: {
+          message: 'Where not found',
+          typeError: 'NOT_FOUND',
+        },
+      });
+    }
+
+    const subscriptions = await prisma.subscriptions.findMany({
+      where,
+      include: {
+        user: SubscriptionSelect['user'],
+        createdBy: SubscriptionSelect['createdBy'],
+      },
+      take: Number(limit) || 10,
+      skip: (Number(page) - 1) * Number(limit) || 0,
+    });
+
+    if (!subscriptions) {
+      return res.status(400).json({
+        error: {
+          message: 'Subscriptions not found',
+          typeError: 'NOT_FOUND',
+        },
+      });
+    }
+
+    if (subscriptions.length === 0) {
+      return res.status(400).json({
+        error: {
+          message: 'Subscriptions not found',
+          typeError: 'NOT_FOUND',
+        },
+      });
+    }
+
+    const bodySubscriptions = subscriptions.map((subscription) => ({
+      id: subscription.id,
+      type: subscription.type,
+      active: subscription.active,
+      startDate: subscription.startDate,
+      endDate: subscription.endDate,
+      user: subscription.user,
+      createdBy: subscription.createdBy,
+    }));
+
+    res.status(200).json({
+      body: bodySubscriptions,
+      message: 'Subscriptions found successfully',
+      page: Number(page) || 1,
+      limit: Number(limit) || 10,
+      total: subscriptions.length || 0,
+      pages: Math.ceil(subscriptions.length / Number(limit)) || 1,
+      nextPage: Number(page) + 1 || 1,
+    });
+
     try {
     } catch (err) {
       console.error(err);
@@ -31,13 +127,15 @@ export const viewOneSubscription: SubscriptionController['viewOneSubscription'] 
       });
     }
 
+    comprobateActive(10, 1, res);
+
     const subscription = await prisma.subscriptions.findUnique({
       where: {
         id,
       },
       include: {
-        user: true,
-        createdBy: true,
+        user: SubscriptionSelect['user'],
+        createdBy: SubscriptionSelect['createdBy'],
       },
     });
 
@@ -49,7 +147,6 @@ export const viewOneSubscription: SubscriptionController['viewOneSubscription'] 
         },
       });
     }
-
     res.status(200).json({
       body: {
         id: subscription.id,
@@ -57,16 +154,8 @@ export const viewOneSubscription: SubscriptionController['viewOneSubscription'] 
         active: subscription.active,
         startDate: subscription.startDate,
         endDate: subscription.endDate,
-        user: {
-          id: subscription.user.id,
-          document: subscription.user.document,
-          fullName: subscription.user.fullName,
-        },
-        createdBy: {
-          id: subscription.createdBy.id,
-          document: subscription.createdBy.document,
-          fullName: subscription.createdBy.fullName,
-        },
+        user: subscription.user,
+        createdBy: subscription.createdBy,
       },
     });
 
@@ -151,7 +240,7 @@ export const createSubscription: SubscriptionController['createSubscription'] =
         });
       }
 
-      const { start, end } = endDate(type);
+      const { start, end } = timeSubscription(type);
 
       const subscription = await prisma.subscriptions.create({
         data: {
@@ -171,8 +260,8 @@ export const createSubscription: SubscriptionController['createSubscription'] =
           },
         },
         include: {
-          user: true,
-          createdBy: true,
+          user: SubscriptionSelect['user'],
+          createdBy: SubscriptionSelect['createdBy'],
         },
       });
 
@@ -194,11 +283,8 @@ export const createSubscription: SubscriptionController['createSubscription'] =
           endDate: subscription.endDate,
           fullName: subscription.user.fullName,
           document: subscription.user.document,
-          createdBy: {
-            id: subscription.createdBy.id,
-            fullName: subscription.createdBy.fullName,
-            document: subscription.createdBy.document,
-          },
+          user: subscription.user,
+          createdBy: subscription.createdBy,
           message: 'Subscription created successfully',
         },
       });

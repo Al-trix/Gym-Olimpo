@@ -1,11 +1,11 @@
 import { SubscriptionType } from '@prisma/client';
+import getColombiaDate from './getColombiaTime';
 
-const endDate = (type: SubscriptionType) => {
-  const startDate: Date = new Date();
+const timeSubscription = (type: SubscriptionType) => {
+  const startDate: Date = getColombiaDate();
   const msPerDay: number = 24 * 60 * 60 * 1000;
   let endSubscription: Date;
 
-  
   if (type === SubscriptionType.DAY) {
     endSubscription = new Date(startDate.getTime() + msPerDay);
   } else if (type === SubscriptionType.FORTNIGHT) {
@@ -14,9 +14,15 @@ const endDate = (type: SubscriptionType) => {
     endSubscription = new Date(startDate.getTime() + 30 * msPerDay);
   } else if (type === SubscriptionType.YEAR) {
     endSubscription = new Date(startDate.getTime() + 365 * msPerDay);
-  }else{
+  } else {
     endSubscription = new Date(startDate.getTime() + 30 * msPerDay);
   }
+
+  endSubscription = new Date(
+    endSubscription.toLocaleString('en-US', {
+      timeZone: 'America/Bogota',
+    })
+  );
 
   return {
     start: startDate,
@@ -24,4 +30,4 @@ const endDate = (type: SubscriptionType) => {
   };
 };
 
-export default endDate;
+export default timeSubscription;

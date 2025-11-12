@@ -9,7 +9,7 @@ export const authLogin: AuthController['authLogin'] = async (req, res) => {
   try {
     const { email, password, document, role } = req.body;
 
-    comprobateRole(role, email, document, res);
+    comprobateRole(res, role, email, document);
 
     const ALLOW_ROLE: UserType[] = [
       UserType.ADMIN,
@@ -26,6 +26,7 @@ export const authLogin: AuthController['authLogin'] = async (req, res) => {
         },
         include: {
           role: true,
+          
         },
       });
     }

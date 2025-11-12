@@ -3,17 +3,17 @@ import { Response } from 'express';
 import { UserType } from '@prisma/client';
 
 type ComprobateRole = (
+  res: Response,
   role: UserType,
   email?: string,
   document?: string,
-  res: Response
-) => Promise<void>;
+) => Promise<Response | void> ;
 
 export const comprobateRole: ComprobateRole = async (
+  res,
   role,
   email,
   document,
-  res
 ) => {
   if (email) {
     const userExist = await prisma.user.findUnique({

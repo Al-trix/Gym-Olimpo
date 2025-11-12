@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
 import type { AuthBody } from './controllers';
-import type { UserType } from '@prisma/client';
+
+import type { UserType} from '@prisma/client';
 
 //? Types of createToken
 export type CreateToken = (
@@ -10,11 +11,15 @@ export type CreateToken = (
   res: Response
 ) => void;
 
-interface BodyToken {
+type  BodyToken = {
   data: {
     id: string;
   };
   role: UserType;
 }
+
+
+export type ComprobateActive = (limit?: number, page?: number, res: Response) => Promise<void>
+
 
 

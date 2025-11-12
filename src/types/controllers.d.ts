@@ -1,5 +1,6 @@
 import { RequestHandler } from 'express';
 import type { UserType, SubscriptionType } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 
 export type AuthBody = {
   fullName?: string;
@@ -23,6 +24,41 @@ type Params = {
 type Creator = {
   creator: UserType;
 };
+type filtersQuery = {
+  type?: SubscriptionType;
+  active?: boolean;
+  document?: string;
+  fullName?: string;
+  creator?: UserType;
+  page?: number;
+  limit?: number;
+};
+
+export const SubscriptionSelect = {
+  user: {
+    select: {
+      id: true,
+      document: true,
+      fullName: true,
+    },
+  },
+  createdBy: {
+    select: {
+      id: true,
+      document: true,
+      fullName: true,
+    },
+  },
+}
+
+export const userSelect = {}
+
+export type Subscription = Prisma.subscriptionsGetPayload<{
+  include: {
+    user: SubscriptionSelect['user'];
+    createdBy: SubscriptionSelect['createdBy'];
+  }
+}>
 
 export type AuthController = {
   authLogin: RequestHandler<
@@ -43,20 +79,14 @@ export type AuthController = {
   authValidteCookie: RequestHandler;
 };
 
-type filtersQuery = {
-  type?: SubscriptionType;
-  active?: boolean;
-  document?: string;
-  fullName?: string;
-  creator?: UserType;
-  page?: number;
-  limit?: number;
-}
-
 export type SubscriptionController = {
-  viewSubscriptions: RequestHandler<unknown, unknown, filtersQuery>;
+  viewSubscriptions: RequestHandler<unknown, unknown, unknown, filtersQuery>;
   viewOneSubscription: RequestHandler<Params, unknown>;
-  createSubscription: RequestHandler<{ idCreatedBy: string }, unknown, SubscriptionBody>;
+  createSubscription: RequestHandler<
+    { idCreatedBy: string },
+    unknown,
+    SubscriptionBody
+  >;
   updateSubscription: RequestHandler<
     Params,
     unknown,

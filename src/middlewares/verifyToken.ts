@@ -10,19 +10,34 @@ const verifyToken: RequestHandler = (req, res, next) => {
     if (!token__user) {
       return res
         .status(401)
-        .json({ message: 'Unauthorized its not have token' });
+        .json({
+          error: {
+            message: 'Unauthorized its not have token',
+            typeError: 'UNAUTHORIZED',
+          }
+        });
     }
 
     if (!token__user.data) {
       return res
         .status(401)
-        .json({ message: 'Unauthorized its not have data' });
+        .json({
+          error: {
+            message: 'Unauthorized its not have data',
+            typeError: 'UNAUTHORIZED',
+          }
+        });
     }
 
     if (!token__user.role) {
       return res
         .status(401)
-        .json({ message: 'Unauthorized its not have role' });
+        .json({
+          error: {
+            message: 'Unauthorized its not have role',
+            typeError: 'UNAUTHORIZED',
+          }
+        });
     }
 
     const decoded = jwt.verify(token__user.data, process.env.TOKEN_SECRET!) as {
@@ -37,7 +52,12 @@ const verifyToken: RequestHandler = (req, res, next) => {
     next();
   } catch (err) {
     console.log(err);
-    return res.status(401).json({ message: 'Unauthorized' });
+    return res.status(401).json({
+      error: {
+        message: 'Unauthorized',
+        typeError: 'UNAUTHORIZED',
+      },
+    });
   }
 };
 

@@ -103,14 +103,14 @@ model Inventory {
   createdAt        DateTime         @default(now())
   updatedAt        DateTime         @updatedAt
   lowStockAlert    Int              @default(2)
-  updatedById      String           @db.Uuid
+  updatedById      String?          @db.Uuid
   createdById      String           @db.Uuid
 
   //* Relation of inventory to User (Many to One)
   creator    User      @relation(name: "createdByItems", fields: [createdById], references: [id])
 
   //* Relation of inventory to User (Many to One)
-  updater    User      @relation(name: "updatedByItems", fields: [updatedById], references: [id])
+  updater    User?      @relation(name: "updatedByItems", fields: [updatedById], references: [id])
 
   //! Index for search optimization
   @@index([name, type, status, quantity, lowStockAlert])

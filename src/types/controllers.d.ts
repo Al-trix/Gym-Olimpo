@@ -1,6 +1,13 @@
 import { RequestHandler } from 'express';
-import type { UserType, SubscriptionType } from '@prisma/client';
-import { Prisma } from '@prisma/client';
+import type {
+  UserType,
+  SubscriptionType,
+  Prisma,
+  InventoryType,
+  Status,
+  Level,
+  RoutineType,
+} from '@prisma/client';
 
 export type AuthBody = {
   fullName?: string;
@@ -24,6 +31,24 @@ type Params = {
 type Creator = {
   creator: UserType;
 };
+
+export type InventoryBody = {
+  name: string;
+  type: InventoryType;
+  quantity: number;
+  status: Status;
+};
+
+export type RoutinesBody = {
+  name: string;
+  level: Level;
+  type: RoutineType;
+  duration: number;
+  objectives: string;
+};
+
+type InventoryBodyPartial = Partial<InventoryBody & { updatedBy?: string }>;
+
 type filtersQuery = {
   type?: SubscriptionType;
   active?: boolean;
@@ -32,6 +57,16 @@ type filtersQuery = {
   creator?: UserType;
   page?: number;
   limit?: number;
+};
+
+type filtersQueryInventory = {
+  name?: string;
+  type?: InventoryType;
+  page?: number;
+  limit?: number;
+  quantity?: number;
+  status?: boolean;
+  lowStockAlert?: number;
 };
 
 export const SubscriptionSelect = {
@@ -49,16 +84,14 @@ export const SubscriptionSelect = {
       fullName: true,
     },
   },
-}
-
-export const userSelect = {}
+};
 
 export type Subscription = Prisma.subscriptionsGetPayload<{
   include: {
     user: SubscriptionSelect['user'];
     createdBy: SubscriptionSelect['createdBy'];
-  }
-}>
+  };
+}>;
 
 export type AuthController = {
   authLogin: RequestHandler<
@@ -93,4 +126,29 @@ export type SubscriptionController = {
     Partial<SubscriptionBody>
   >;
   deleteSubscription: RequestHandler<Params, unknown>;
+};
+
+export type InventoryCotroller = {
+  viewAllItems: RequestHandler<
+    unknown,
+    unknown,
+    unknown,
+    filtersQueryInventory
+  >;
+  viewOneItem: RequestHandler<Params, unknown>;
+  createItem: RequestHandler<{ idCreatedBy: string }, unknown, InventoryBody>;
+  updateItem: RequestHandler<Params, unknown, InventoryBodyPartial>;
+  deleteItem: RequestHandler<Params, unknown>;
+};
+export type RoutinesController = {
+  viewAllRoutines: RequestHandler<
+    unknown,
+    unknown,
+    unknown,
+    Partial<Omit<RoutinesBody, 'objectives'> & { limit: number; page: number }>
+  >;
+  viewOneRoutine: RequestHandler<Params, unknown>;
+  createRoutine: RequestHandler<Params, unknown, RoutinesBody>;
+  updateRoutine: RequestHandler<Params, unknown, Partial<RoutinesBody>>;
+  deleteRoutine: RequestHandler<Params, unknown>;
 };

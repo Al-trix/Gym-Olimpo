@@ -7,7 +7,12 @@ const allowRoles: Allowoles = (roles) => (req, res, next) => {
   if (!req.user) {
     return res
       .status(401)
-      .json({ message: 'Unauthorized', typeError: 'UNAUTHORIZED' });
+      .json({
+        error: {
+          message: 'Unauthorized its not have token',
+          typeError: 'UNAUTHORIZED',
+        }
+      });
   }
 
   const { role } = req.user ;
@@ -15,7 +20,12 @@ const allowRoles: Allowoles = (roles) => (req, res, next) => {
   if (!roles.includes(role)) {
     return res
       .status(403)
-      .json({ message: 'Rol not allowed', typeError: 'FORBIDDEN' });
+      .json({
+        error: {
+          message: 'Forbidden',
+          typeError: 'FORBIDDEN',
+        }
+      });
   }
 
   next();

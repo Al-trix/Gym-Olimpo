@@ -5,9 +5,7 @@ import {
   SubscriptionSelect,
 } from '../types/controllers.d';
 import { UserType, SubscriptionType } from '@prisma/client';
-import endDate from '@/libs/timeSubscription';
 import { hash } from 'bcryptjs';
-
 import timeSubscription from '@/libs/timeSubscription';
 
 export const viewSubscriptions: SubscriptionController['viewSubscriptions'] =
@@ -180,7 +178,22 @@ export const createSubscription: SubscriptionController['createSubscription'] =
       if (!idCreatedBy) {
         return res.status(400).json({
           error: {
-            message: 'Creator role not found',
+            message: 'Id of created by not found',
+            typeError: 'NOT_FOUND',
+          },
+        });
+      }
+
+      const creator = await prisma.user.findUnique({
+        where: {
+          id: idCreatedBy,
+        },
+      });
+
+      if (!creator) {
+        return res.status(400).json({
+          error: {
+            message: 'Creator not found',
             typeError: 'NOT_FOUND',
           },
         });
@@ -329,7 +342,7 @@ export const updateSubscription: SubscriptionController['updateSubscription'] =
         });
       }
 
-      const { start, end } = endDate(type!);
+      const { start, end } = timeSubscription(type!);
 
       const subscription = await prisma.subscriptions.update({
         where: {
@@ -380,8 +393,8 @@ export const deleteSubscription: SubscriptionController['deleteSubscription'] =
       if (!id) {
         return res.status(400).json({
           error: {
-            message: 'Subscription not found',
-            typeError: 'NOT_FOUND',
+            message: 'Id not provider',
+            typeError: 'NOT_PROVIDER',
           },
         });
       }

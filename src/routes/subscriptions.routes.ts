@@ -14,11 +14,18 @@ import allowRoles from '@/middlewares/allowRoles';
 const routerSubscriptions = Router();
 const pathRoot = '/api/subs';
 
+//! Autorization
+const acctionsSubscriptions: UserType[] = [
+  UserType.COACH,
+  UserType.RECEPTIONIST,
+  UserType.LEADER_COACHS,
+];
+
 //? route and controller for views subscriptions
 routerSubscriptions.get(
   `${pathRoot}/views`,
   verifyToken,
-  allowRoles([UserType.COACH, UserType.RECEPTIONIST, UserType.LEADER_COACHS]),
+  allowRoles(acctionsSubscriptions),
   viewSubscriptions
 );
 
@@ -26,7 +33,7 @@ routerSubscriptions.get(
 routerSubscriptions.get(
   `${pathRoot}/view/:id`,
   verifyToken,
-  allowRoles([UserType.COACH, UserType.RECEPTIONIST, UserType.LEADER_COACHS]),
+  allowRoles(acctionsSubscriptions),
   viewOneSubscription
 );
 
@@ -34,7 +41,7 @@ routerSubscriptions.get(
 routerSubscriptions.post(
   `${pathRoot}/create/:idCreatedBy`,
   verifyToken,
-  allowRoles([UserType.COACH, UserType.RECEPTIONIST, UserType.LEADER_COACHS]),
+  allowRoles(acctionsSubscriptions),
   createSubscription
 );
 
@@ -42,7 +49,7 @@ routerSubscriptions.post(
 routerSubscriptions.put(
   `${pathRoot}/update/:id`,
   verifyToken,
-  allowRoles([UserType.COACH, UserType.RECEPTIONIST, UserType.LEADER_COACHS]),
+  allowRoles(acctionsSubscriptions),
   updateSubscription
 );
 
@@ -50,7 +57,7 @@ routerSubscriptions.put(
 routerSubscriptions.delete(
   `${pathRoot}/delete/:id`,
   verifyToken,
-  allowRoles([UserType.COACH, UserType.RECEPTIONIST, UserType.LEADER_COACHS]),
+  allowRoles(acctionsSubscriptions),
   deleteSubscription
 );
 

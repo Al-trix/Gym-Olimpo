@@ -4,41 +4,102 @@ import { hash, compare } from 'bcryptjs';
 import { comprobateRole } from '@/libs/comprobateRole';
 import { AuthController } from '../types/controllers';
 import { UserType } from '@prisma/client';
+import e from 'express';
 
 export const authLogin: AuthController['authLogin'] = async (req, res) => {
   try {
-    const { email, password, document, role } = req.body;
+    const { email, password, document } = req.body;
 
-    comprobateRole(res, role, email, document);
+    // comprobateRole(res, role, email, document);
 
-    const ALLOW_ROLE: UserType[] = [
-      UserType.ADMIN,
-      UserType.RECEPTIONIST,
-      UserType.LEADER_COACHS,
-    ];
-
-    let user;
-    
-    if (!ALLOW_ROLE.includes(role)) {
-      user = await prisma.user.findUnique({
-        where: {
-          document,
-        },
-        include: {
-          role: true,
-          
-        },
-      });
-    }
-
-    user = await prisma.user.findUnique({
+    const userExist = await prisma.user.findUnique({
       where: {
-        email,
+        email: email ? email : document,
       },
       include: {
-        role: true,
+        role: {
+          select: {
+            name: true,
+          },
+        },
       },
     });
+
+    const includeUser: any = {
+      role: {
+        select: {
+          name: true,
+        },
+      },
+    };
+
+    if (userExist?.role.name === UserType.USER) {
+      includeUser['subscription'] = {
+        select: {
+          id: true,
+          type: true,
+          startDate: true,
+          endDate: true,
+          active: true,
+          createdAt: true,
+          updatedAt: true,
+          createdBy: {
+            select: {
+              id: true,
+              document: true,
+              fullName: true,
+              role: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      };
+    }
+
+    if (userExist?.role.name === UserType.COACH || userExist?.role.name === UserType.LEADER_COACHS) {
+      includeUser['routine'] = {
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          level: true,
+          duration: true,
+          objectives: true,
+          coach: {
+            select: {
+              id: true,
+              document: true,
+              fullName: true,
+              role: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+          exercises: {
+            select: {
+              id: true,
+              exerciseName: true,
+              sets: true,
+              reps: true,
+            },
+          }
+        },
+      };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        email: email ? email : document,
+      },
+      include: includeUser,
+    });
+
+
 
     if (!user) {
       return res.status(400).json({
@@ -81,10 +142,20 @@ export const authLogin: AuthController['authLogin'] = async (req, res) => {
         active: user.active,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        subscriptionUser: user.subscriptionUser,
+        coachRoutines: user.coachRoutines,
       },
       message: 'Login successful',
     });
-  } catch (err) {}
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      error: {
+        message: 'Server error',
+        typeError: 'SERVER_ERROR',
+      },
+    });
+  }
 };
 
 export const authRegister: AuthController['authRegister'] = async (
@@ -123,7 +194,7 @@ export const authRegister: AuthController['authRegister'] = async (
 
     const hashedPassword = await hash(password, 10);
 
-    const roleExists = await prisma.roles.findFirst({
+    const roleExists = await prisma.role.findFirst({
       where: {
         name: role,
       },
@@ -234,7 +305,7 @@ export const authUpdate: AuthController['authUpdate'] = async (req, res) => {
       });
     }
 
-    const roleExists = await prisma.roles.findFirst({
+    const roleExists = await prisma.role.findFirst({
       where: {
         name: role,
       },
@@ -376,13 +447,68 @@ export const authValidteCookie: AuthController['authValidteCookie'] = async (
         .json({ message: 'Not authorized', typeError: 'UNAUTHORIZED' });
     }
     const { data, role } = req.user;
+    const includeUser: any = {};
 
+    if (role === UserType.USER) {
+      includeUser['subscriptions'] = {
+        select: {
+          id: true,
+          type: true,
+          startDate: true,
+          endDate: true,
+          active: true,
+          createdAt: true,
+          updatedAt: true,
+          createdBy: {
+            select: {
+              id: true,
+              document: true,
+              fullName: true,
+              role: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      };
+    }
+
+    if (role === UserType.COACH || role === UserType.LEADER_COACHS) {
+      includeUser['routine'] = {
+        select: {
+          id: true,
+          type: true,
+          name: true,
+          level: true,
+          duration: true,
+          objectives: true,
+          createdAt: true,
+          updatedAt: true,
+          createdBy: {
+            select: {
+              id: true,
+              document: true,
+              fullName: true,
+              role: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      };
+    }
     const user = await prisma.user.findUnique({
       where: {
         id: data.id,
       },
       include: {
         role: true,
+        subscriptionUser: includeUser['subscriptions'] || false,
+        coachRoutines: includeUser['routine'] || false,
       },
     });
 
@@ -390,6 +516,50 @@ export const authValidteCookie: AuthController['authValidteCookie'] = async (
       return res
         .status(401)
         .json({ message: 'Not found user', typeError: 'NOT_FOUND' });
+    }
+
+    let dataUser: any = {};
+    if (includeUser.includes('subscriptions')) {
+      dataUser['subscriptions'] = user.subscriptionUser.map(
+        (subscription: any) => ({
+          id: subscription.id,
+          type: subscription.type,
+          startDate: subscription.startDate,
+          endDate: subscription.endDate,
+          active: subscription.active,
+          createdAt: subscription.createdAt,
+          updatedAt: subscription.updatedAt,
+          createdBy: {
+            id: subscription.createdBy.id,
+            document: subscription.createdBy.document,
+            fullName: subscription.createdBy.fullName,
+            role: {
+              name: subscription.createdBy.role.name,
+            },
+          },
+        })
+      );
+    }
+
+    if (includeUser.includes('routine')) {
+      dataUser['routine'] = user.coachRoutines.map((routine: any) => ({
+        id: routine.id,
+        type: routine.type,
+        name: routine.name,
+        level: routine.level,
+        duration: routine.duration,
+        objectives: routine.objectives,
+        createdAt: routine.createdAt,
+        updatedAt: routine.updatedAt,
+        createdBy: {
+          id: routine.createdBy.id,
+          document: routine.createdBy.document,
+          fullName: routine.createdBy.fullName,
+          role: {
+            name: routine.createdBy.role.name,
+          },
+        },
+      }));
     }
 
     return res.status(200).json({
@@ -402,6 +572,7 @@ export const authValidteCookie: AuthController['authValidteCookie'] = async (
         active: user.active,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
+        ...dataUser,
       },
       message: 'User validated successfully',
     });

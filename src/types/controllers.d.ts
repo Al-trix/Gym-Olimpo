@@ -28,6 +28,10 @@ type Params = {
   id: string;
 };
 
+type paramsExercises = {
+  routineId: string;
+}
+
 type Creator = {
   creator: UserType;
 };
@@ -48,6 +52,13 @@ export type RoutinesBody = {
 };
 
 type InventoryBodyPartial = Partial<InventoryBody & { updatedBy?: string }>;
+
+type ExercisesBody = {
+  exerciseName: string;
+  description: string;
+  sets: Int;
+  reps: Int;
+};
 
 type filtersQuery = {
   type?: SubscriptionType;
@@ -151,4 +162,20 @@ export type RoutinesController = {
   createRoutine: RequestHandler<Params, unknown, RoutinesBody>;
   updateRoutine: RequestHandler<Params, unknown, Partial<RoutinesBody>>;
   deleteRoutine: RequestHandler<Params, unknown>;
+};
+
+
+export type ExercisesController = {
+  viewAllExercises: RequestHandler<
+    unknown,
+    unknown,
+    unknown,
+    Partial<
+      Pick<ExercisesBody, 'exerciseName'> & { limit: number; page: number }
+    >
+  >;
+  viewOneExercise: RequestHandler<Params, unknown>;
+  createExercise: RequestHandler<paramsExercises, unknown, ExercisesBody>;
+  updateExercise: RequestHandler<Params, unknown, Partial<ExercisesBody>>;
+  deleteExercise: RequestHandler<params, unknown>;
 };

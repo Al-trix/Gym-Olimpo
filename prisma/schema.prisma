@@ -13,7 +13,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Roles {
+model Role {
   id        String      @id @default(uuid()) @db.Uuid
   name      UserType    @unique
 
@@ -27,18 +27,20 @@ model User {
   email        String?      @unique
   document     String       @unique @db.VarChar(50)
   password     String       @db.VarChar(255)
-  role         Roles        @relation(fields: [roleId], references: [id])
+  role         Role         @relation(fields: [roleId], references: [id])
   roleId       String       @db.Uuid
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
   active       Boolean      @default(true)
-  logs         UserLogs[]
+
+  //* Relation of User to logs (One to Many)
+  logs         UserLog[]
 
   //* Relation of User to subscriptions (One to Many)
-  subscriptionUser        Subscriptions[]    @relation(name: "userSubscriptions")
+  subscriptionUser        Subscription[]    @relation(name: "userSubscriptions")
 
   //* Relation of User to subscriptions created by them (One to Many)
-  createdSubscriptions    Subscriptions[]    @relation(name: "createdBySubscriptions")
+  createdSubscriptions    Subscription[]    @relation(name: "createdBySubscriptions")
 
   //* Relation of User to inventory created by them (One to Many)
   createdInventory        Inventory[]        @relation(name: "createdByItems")
@@ -47,21 +49,21 @@ model User {
   updatedInventory        Inventory[]        @relation(name: "updatedByItems")
 
   //* Relation of User to schedules created by them (One to Many)
-  createdSchedules        Schedules[]        @relation(name: "createdSchedules")
+  createdSchedules        Schedule[]        @relation(name: "createdSchedules")
 
   //* Relation of User to schedules updated by them (One to Many)
-  updatedSchedules        Schedules[]        @relation(name: "updatedSchedules")
+  updatedSchedules        Schedule[]        @relation(name: "updatedSchedules")
 
   //* Relation of User to schedules as coach (One to Many)
-  coachSchedules          Schedules[]        @relation(name: "coachSchedules")
+  coachSchedules          Schedule[]        @relation(name: "coachSchedules")
 
   //* Relation of User to routines as coach (One to Many)
-  coachRoutines           routines[]         @relation(name: "coachRoutines")
+  coachRoutines           routine[]         @relation(name: "coachRoutines")
 
   @@index([document,email,fullName,active])
 }
 
-model UserLogs {
+model UserLog {
   id           String       @id @default(uuid()) @db.Uuid
   userId       String       @db.Uuid
   action       String       @db.VarChar(255)
@@ -74,7 +76,7 @@ model UserLogs {
   @@index([action,timestamp, userId])
 }
 
-model Subscriptions {
+model Subscription {
   id             String             @id @default(uuid()) @db.Uuid
   type           SubscriptionType   @default(DAY)
   startDate      DateTime           @default(now())
@@ -117,7 +119,7 @@ model Inventory {
 }
 
 
-model Schedules {
+model Schedule {
   id            String        @id @default(uuid()) @db.Uuid
   day           Days
   startTime     DateTime
@@ -139,7 +141,7 @@ model Schedules {
   coach         User          @relation(name: "coachSchedules", fields: [coachId], references: [id])
 }
 
-model routines {
+model routine {
   id            String          @id @default(uuid()) @db.Uuid
   name          String          @db.VarChar(255) @unique
   type          RoutineType     @default(GENERAL)
@@ -149,13 +151,13 @@ model routines {
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   coachId       String          @db.Uuid
-  exercises     routineExercises[]
+  exercises     exercise[]
 
   //* Relation of routines to User (Many to One)
   coach         User           @relation(name: "coachRoutines", fields: [coachId], references: [id])
 }
 
-model routineExercises {
+model exercise {
   id            String         @id @default(uuid()) @db.Uuid
   exerciseName  String         @db.VarChar(255)
   description   String         @db.VarChar(500)
@@ -164,7 +166,7 @@ model routineExercises {
   routineId     String         @db.Uuid
 
   //* Relation of routineExercises to routines (Many to One)
-  routine       routines       @relation(fields: [routineId], references: [id])
+  routine       routine      @relation(fields: [routineId], references: [id])
 }
 
 

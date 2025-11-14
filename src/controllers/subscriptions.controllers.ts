@@ -52,7 +52,7 @@ export const viewSubscriptions: SubscriptionController['viewSubscriptions'] =
       });
     }
 
-    const subscriptions = await prisma.subscriptions.findMany({
+    const subscriptions = await prisma.subscription.findMany({
       where,
       include: {
         user: SubscriptionSelect['user'],
@@ -127,7 +127,7 @@ export const viewOneSubscription: SubscriptionController['viewOneSubscription'] 
 
     comprobateActive(10, 1, res);
 
-    const subscription = await prisma.subscriptions.findUnique({
+    const subscription = await prisma.subscription.findUnique({
       where: {
         id,
       },
@@ -214,7 +214,7 @@ export const createSubscription: SubscriptionController['createSubscription'] =
         });
       }
 
-      const roleExists = await prisma.roles.findUnique({
+      const roleExists = await prisma.role.findUnique({
         where: {
           name: UserType.USER,
         },
@@ -255,7 +255,7 @@ export const createSubscription: SubscriptionController['createSubscription'] =
 
       const { start, end } = timeSubscription(type);
 
-      const subscription = await prisma.subscriptions.create({
+      const subscription = await prisma.subscription.create({
         data: {
           type,
           active,
@@ -327,7 +327,7 @@ export const updateSubscription: SubscriptionController['updateSubscription'] =
         });
       }
 
-      const subscriptionExists = await prisma.subscriptions.findUnique({
+      const subscriptionExists = await prisma.subscription.findUnique({
         where: {
           id,
         },
@@ -344,7 +344,7 @@ export const updateSubscription: SubscriptionController['updateSubscription'] =
 
       const { start, end } = timeSubscription(type!);
 
-      const subscription = await prisma.subscriptions.update({
+      const subscription = await prisma.subscription.update({
         where: {
           id,
         },
@@ -399,7 +399,7 @@ export const deleteSubscription: SubscriptionController['deleteSubscription'] =
         });
       }
 
-      const subscriptionExists = await prisma.subscriptions.findUnique({
+      const subscriptionExists = await prisma.subscription.findUnique({
         where: {
           id,
         },
@@ -414,7 +414,7 @@ export const deleteSubscription: SubscriptionController['deleteSubscription'] =
         });
       }
 
-      const subscription = await prisma.subscriptions.delete({
+      const subscription = await prisma.subscription.delete({
         where: {
           id,
         },

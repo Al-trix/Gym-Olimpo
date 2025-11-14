@@ -28,7 +28,7 @@ export const viewAllRoutines: RoutinesController['viewAllRoutines'] = async (
       });
     }
 
-    const routines = await prisma.routines.findMany({
+    const routines = await prisma.routine.findMany({
       where,
       skip: (Number(page) - 1) * Number(limit) || 0,
       take: Number(limit) || 10,
@@ -45,6 +45,14 @@ export const viewAllRoutines: RoutinesController['viewAllRoutines'] = async (
             },
           },
         },
+        exercises:{
+          select: {
+            exerciseName: true,
+            reps: true,
+            sets: true
+
+          }
+        }
       },
     });
 
@@ -64,8 +72,8 @@ export const viewAllRoutines: RoutinesController['viewAllRoutines'] = async (
       duration: routine.duration,
       objectives: routine.objectives,
       createdAt: routine.createdAt,
-      updatedAt: routine.updatedAt,
       coach: routine.coach,
+      exercises: routine.exercises,
     }));
 
     res.status(200).json({
@@ -104,7 +112,7 @@ export const viewOneRoutine: RoutinesController['viewOneRoutine'] = async (
       });
     }
 
-    const routine = await prisma.routines.findUnique({
+    const routine = await prisma.routine.findUnique({
       where: {
         id,
       },
@@ -121,6 +129,13 @@ export const viewOneRoutine: RoutinesController['viewOneRoutine'] = async (
             }
           },
         },
+        exercises: {
+          select: {
+            exerciseName: true,
+            reps: true,
+            sets: true
+          }
+        }
       },
     });
 
@@ -180,7 +195,7 @@ export const createRoutine: RoutinesController['createRoutine'] = async (
       });
     }
 
-    const routineExist = await prisma.routines.findFirst({
+    const routineExist = await prisma.routine.findFirst({
       where: {
         name,
       },
@@ -195,7 +210,7 @@ export const createRoutine: RoutinesController['createRoutine'] = async (
       });
     }
 
-    const routine = await prisma.routines.create({
+    const routine = await prisma.routine.create({
       data: {
         name,
         type,
@@ -207,6 +222,7 @@ export const createRoutine: RoutinesController['createRoutine'] = async (
             id: creatorCoach.id,
           },
         },
+
       },
       include: {
         coach: {
@@ -220,6 +236,13 @@ export const createRoutine: RoutinesController['createRoutine'] = async (
             document: true,
             fullName: true,
           },
+        },
+        exercises: {
+          select: {
+            exerciseName: true,
+            reps: true,
+            sets: true
+          }
         },
       },
     });
@@ -241,7 +264,9 @@ export const createRoutine: RoutinesController['createRoutine'] = async (
         level: routine.level,
         duration: routine.duration,
         objectives: routine.objectives,
+        createdAt: routine.createdAt,
         coach: routine.coach,
+        exercises: routine.exercises
       },
       message: 'Routine created successfully',
     });
@@ -273,7 +298,7 @@ export const updateRoutine: RoutinesController['updateRoutine'] = async (
       });
     }
 
-    const routineExist = await prisma.routines.findUnique({
+    const routineExist = await prisma.routine.findUnique({
       where: {
         id,
       },
@@ -288,7 +313,7 @@ export const updateRoutine: RoutinesController['updateRoutine'] = async (
       });
     }
 
-    const routine = await prisma.routines.update({
+    const routine = await prisma.routine.update({
       where: {
         id,
       },
@@ -351,7 +376,7 @@ export const deleteRoutine: RoutinesController['deleteRoutine'] = async (
       });
     }
 
-    const routineExist = await prisma.routines.findUnique({
+    const routineExist = await prisma.routine.findUnique({
       where: {
         id,
       },
@@ -366,7 +391,7 @@ export const deleteRoutine: RoutinesController['deleteRoutine'] = async (
       });
     }
 
-    const routine = await prisma.routines.delete({
+    const routine = await prisma.routine.delete({
       where: {
         id,
       },
